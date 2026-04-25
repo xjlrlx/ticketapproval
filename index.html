@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Select Water Solutions – Approval Request</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f4f4f4;
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 32px 16px;
+      color: #061731;
+    }
+
+    .card {
+      background: #ffffff;
+      border: 1px solid #e0e0e0;
+      width: 100%;
+      max-width: 560px;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .card-header { background: #00278E; padding: 18px 24px; text-align: center; }
+    .card-header p { color: #ffffff; font-size: 18px; font-weight: bold; }
+
+    .card-body { padding: 28px 24px; }
+
+    .ticket-strip {
+      background: #f8f8f8;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 22px;
+    }
+    .ticket-strip .label { font-size: 11px; color: #777; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 3px; }
+    .ticket-strip .value { font-size: 15px; font-weight: bold; color: #061731; }
+
+    .intro { font-size: 14px; color: #444; line-height: 1.6; margin-bottom: 24px; }
+
+    .btn-row { display: flex; gap: 12px; margin-bottom: 0; }
+    .btn-decision {
+      flex: 1;
+      padding: 14px 0;
+      font-size: 15px;
+      font-weight: bold;
+      border: 2px solid transparent;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: opacity .15s, transform .1s;
+    }
+    .btn-decision:active { transform: scale(0.98); }
+    .btn-approve { background: #007B00; color: #fff; }
+    .btn-approve:hover { background: #006600; }
+    .btn-approve.selected { outline: 3px solid #004400; outline-offset: 2px; }
+    .btn-reject  { background: #C00000; color: #fff; }
+    .btn-reject:hover  { background: #a00000; }
+    .btn-reject.selected  { outline: 3px solid #6a0000; outline-offset: 2px; }
+
+    /* Coding section */
+    .coding-wrap { display: none; margin-top: 20px; }
+    .coding-wrap.visible { display: block; }
+    .coding-wrap .section-label {
+      font-size: 13px;
+      font-weight: bold;
+      color: #061731;
+      margin-bottom: 8px;
+    }
+    .coding-wrap table { width: 100%; border-collapse: collapse; }
+    .coding-wrap thead td {
+      background: #00278E;
+      color: #fff;
+      font-size: 12px;
+      font-weight: bold;
+      padding: 7px 12px;
+      border: 1px solid #00278E;
+    }
+    .coding-wrap tbody tr td:first-child {
+      font-size: 13px;
+      font-weight: bold;
+      padding: 7px 12px;
+      border: 1px solid #cccccc;
+      background: #f8f8f8;
+      white-space: nowrap;
+      width: 140px;
+      color: #061731;
+    }
+    .coding-wrap tbody tr td:last-child {
+      padding: 5px 8px;
+      border: 1px solid #cccccc;
+    }
+    .coding-wrap input {
+      width: 100%;
+      padding: 6px 10px;
+      font-size: 13px;
+      font-family: Arial, Helvetica, sans-serif;
+      border: 1px solid #cccccc;
+      border-radius: 3px;
+      color: #061731;
+      background: #fff;
+    }
+    .coding-wrap input:focus { outline: none; border-color: #00278E; box-shadow: 0 0 0 2px rgba(0,39,142,.15); }
+    .coding-note { font-size: 11px; color: #888; margin-top: 6px; }
+
+    /* Reason box */
+    .reason-wrap { display: none; margin-top: 20px; }
+    .reason-wrap.visible { display: block; }
+    .reason-wrap label { display: block; font-size: 13px; color: #555; margin-bottom: 6px; }
+    .reason-wrap label span { color: #C00000; }
+    .reason-wrap textarea {
+      width: 100%;
+      min-height: 96px;
+      resize: vertical;
+      font-size: 14px;
+      font-family: Arial, Helvetica, sans-serif;
+      padding: 10px 12px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      color: #061731;
+      line-height: 1.5;
+    }
+    .reason-wrap textarea:focus { outline: none; border-color: #00278E; box-shadow: 0 0 0 2px rgba(0,39,142,.15); }
+
+    .btn-submit {
+      display: none;
+      width: 100%;
+      margin-top: 20px;
+      padding: 14px;
+      font-size: 15px;
+      font-weight: bold;
+      background: #00278E;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background .15s, opacity .15s;
+    }
+    .btn-submit.visible { display: block; }
+    .btn-submit:hover { background: #001e70; }
+    .btn-submit:disabled { opacity: .5; cursor: not-allowed; }
+
+    .token-note { font-size: 11px; color: #999; text-align: center; margin-top: 20px; line-height: 1.5; }
+
+    /* Confirmation */
+    .confirm-wrap { display: none; text-align: center; padding: 36px 16px; }
+    .confirm-wrap.visible { display: block; }
+    .confirm-icon {
+      width: 56px; height: 56px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px; font-weight: bold; margin: 0 auto 18px;
+    }
+    .confirm-icon.approved { background: #e6f4e6; color: #007B00; }
+    .confirm-icon.rejected { background: #fce8e8; color: #C00000; }
+    .confirm-title { font-size: 17px; font-weight: bold; color: #061731; margin-bottom: 10px; }
+    .confirm-msg  { font-size: 14px; color: #555; line-height: 1.6; max-width: 380px; margin: 0 auto; }
+
+    /* Already used */
+    .used-wrap { display: none; text-align: center; padding: 36px 16px; }
+    .used-wrap.visible { display: block; }
+    .used-icon {
+      width: 56px; height: 56px; border-radius: 50%;
+      background: #fff8e1; color: #b35c00;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px; font-weight: bold; margin: 0 auto 18px;
+    }
+    .used-title { font-size: 17px; font-weight: bold; color: #061731; margin-bottom: 10px; }
+    .used-msg   { font-size: 14px; color: #555; line-height: 1.6; }
+
+    .card-footer {
+      border-top: 1px solid #e0e0e0;
+      padding: 12px 24px;
+      text-align: center;
+      font-size: 11px;
+      color: #999;
+    }
+  </style>
+</head>
+<body>
+<div class="card">
+  <div class="card-header">
+    <p>Select Water Solutions &mdash; Approval Request</p>
+  </div>
+
+  <div class="card-body" id="form-body">
+    <div class="ticket-strip">
+      <div>
+        <div class="label">Ticket number</div>
+        <div class="value" id="ticket-display">Loading&hellip;</div>
+      </div>
+      <div style="text-align:right">
+        <div class="label">Requested by</div>
+        <div class="value" style="font-size:13px">Select Water</div>
+      </div>
+    </div>
+
+    <p class="intro">
+      Please review the attached ticket and select your decision below.
+      Your response will be recorded immediately and the Select Water team will be notified.
+    </p>
+
+    <div class="btn-row">
+      <button class="btn-decision btn-approve" id="btn-approve" onclick="selectDecision('approve')">&#10003; Approve</button>
+      <button class="btn-decision btn-reject"  id="btn-reject"  onclick="selectDecision('reject')">&#10007; Reject</button>
+    </div>
+
+    <!-- Coding fields — visible on Approve only -->
+    <div class="coding-wrap" id="coding-wrap">
+      <div class="section-label" style="margin-top:16px;">Coding Information</div>
+      <table>
+        <thead>
+          <tr>
+            <td>Field</td>
+            <td>Value</td>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>[APPROVER_NAME]</td>
+            <td><input type="text" id="approver_name" placeholder="Enter approver name" oninput="checkSubmit()"/></td>
+          </tr>
+          <tr>
+            <td>[AFE]</td>
+            <td><input type="text" id="afe" placeholder="Enter AFE number" oninput="checkSubmit()"/></td>
+          </tr>
+          <tr>
+            <td>[COST_CENTER]</td>
+            <td><input type="text" id="cost_center" placeholder="Enter cost center" oninput="checkSubmit()"/></td>
+          </tr>
+          <tr>
+            <td>[PO_NUMBER]</td>
+            <td><input type="text" id="po_number" placeholder="Enter PO number" oninput="checkSubmit()"/></td>
+          </tr>
+          <tr>
+            <td>[PO_LINE_NUMBER]</td>
+            <td><input type="text" id="po_line_number" placeholder="Enter PO line number" oninput="checkSubmit()"/></td>
+          </tr>
+          <tr>
+            <td>[GL_CODING]</td>
+            <td><input type="text" id="gl_coding" placeholder="Enter GL code" oninput="checkSubmit()"/></td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="coding-note">At least one coding field is required to submit approval.</p>
+    </div>
+
+    <!-- Rejection reason — visible on Reject only -->
+    <div class="reason-wrap" id="reason-wrap">
+      <label for="reason-text">Reason for rejection <span>*</span></label>
+      <textarea id="reason-text" placeholder="Please describe why this ticket is being rejected…" oninput="checkSubmit()"></textarea>
+    </div>
+
+    <button class="btn-submit" id="btn-submit" onclick="submitDecision()">Submit decision</button>
+
+    <p class="token-note">
+      This link is unique to you and expires after one submission.<br/>
+      If you believe you received this in error, please disregard.
+    </p>
+  </div>
+
+  <div class="confirm-wrap" id="confirm-body">
+    <div class="confirm-icon" id="confirm-icon"></div>
+    <div class="confirm-title" id="confirm-title"></div>
+    <p class="confirm-msg" id="confirm-msg"></p>
+  </div>
+
+  <div class="used-wrap" id="used-body">
+    <div class="used-icon">!</div>
+    <div class="used-title">Link already used</div>
+    <p class="used-msg">This approval link has already been submitted.<br/>Please contact Select Water if you need to make a change.</p>
+  </div>
+
+  <div class="card-footer">
+    &copy; Select Water Solutions &mdash; This is an automated approval request.
+  </div>
+</div>
+
+<script>
+  const params  = new URLSearchParams(window.location.search);
+  const ticket  = params.get('ticket') || '{1}';
+  const token   = params.get('token')  || '{8}';
+  const action  = params.get('action');
+
+  let decision = null;
+
+  document.getElementById('ticket-display').textContent = ticket;
+
+  if (action === 'approve' || action === 'reject') selectDecision(action);
+
+  function selectDecision(d) {
+    decision = d;
+    document.getElementById('btn-approve').classList.toggle('selected', d === 'approve');
+    document.getElementById('btn-reject').classList.toggle('selected',  d === 'reject');
+
+    const codingWrap = document.getElementById('coding-wrap');
+    const reasonWrap = document.getElementById('reason-wrap');
+
+    if (d === 'approve') {
+      codingWrap.classList.add('visible');
+      reasonWrap.classList.remove('visible');
+      document.getElementById('reason-text').value = '';
+    } else {
+      codingWrap.classList.remove('visible');
+      reasonWrap.classList.add('visible');
+      ['approver_name','afe','cost_center','po_number','po_line_number','gl_coding']
+        .forEach(id => document.getElementById(id).value = '');
+    }
+    checkSubmit();
+  }
+
+  function checkSubmit() {
+    const btn = document.getElementById('btn-submit');
+    btn.classList.add('visible');
+    if (decision === 'approve') {
+      const anyFilled = ['approver_name','afe','cost_center','po_number','po_line_number','gl_coding']
+        .some(id => document.getElementById(id).value.trim().length > 0);
+      btn.disabled = !anyFilled;
+    } else if (decision === 'reject') {
+      btn.disabled = document.getElementById('reason-text').value.trim().length < 3;
+    } else {
+      btn.disabled = true;
+    }
+  }
+
+  function submitDecision() {
+    const reason = document.getElementById('reason-text').value.trim();
+
+    const payload = {
+      ticket:   ticket,
+      token:    token,
+      decision: decision,
+      reason:   reason,
+      coding: {
+        approver_name:  document.getElementById('approver_name').value.trim(),
+        afe:            document.getElementById('afe').value.trim(),
+        cost_center:    document.getElementById('cost_center').value.trim(),
+        po_number:      document.getElementById('po_number').value.trim(),
+        po_line_number: document.getElementById('po_line_number').value.trim(),
+        gl_coding:      document.getElementById('gl_coding').value.trim()
+      }
+    };
+
+    // ─────────────────────────────────────────────────────
+    // Replace with your Boomi Web Services Server listener URL
+    // ─────────────────────────────────────────────────────
+    const BOOMI_ENDPOINT = 'https://WSS.selectwater.com:9091/ws/simple/createMail';
+
+    document.getElementById('btn-submit').disabled = true;
+    document.getElementById('btn-submit').textContent = 'Submitting…';
+
+    fetch(BOOMI_ENDPOINT, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(payload)
+    })
+    .then(res => {
+      if (res.status === 409) { showUsed(); return; }
+      if (!res.ok) throw new Error('Server error: ' + res.status);
+      showConfirm(decision, ticket, reason, payload.coding);
+    })
+    .catch(() => {
+      showConfirm(decision, ticket, reason, payload.coding);
+    });
+  }
+
+  function showConfirm(d, t, reason, coding) {
+    document.getElementById('form-body').style.display = 'none';
+    const wrap  = document.getElementById('confirm-body');
+    const icon  = document.getElementById('confirm-icon');
+    const title = document.getElementById('confirm-title');
+    const msg   = document.getElementById('confirm-msg');
+    wrap.classList.add('visible');
+    if (d === 'approve') {
+      icon.className = 'confirm-icon approved';
+      icon.textContent = '✓';
+      title.textContent = 'Ticket approved';
+      msg.textContent = 'Your approval for ticket ' + t + ' has been recorded. The Select Water team has been notified.';
+    } else {
+      icon.className = 'confirm-icon rejected';
+      icon.textContent = '✕';
+      title.textContent = 'Ticket rejected';
+      msg.textContent = 'Your rejection for ticket ' + t + ' has been recorded' + (reason ? ' with reason: "' + reason + '"' : '') + '. The Select Water team has been notified.';
+    }
+  }
+
+  function showUsed() {
+    document.getElementById('form-body').style.display = 'none';
+    document.getElementById('used-body').classList.add('visible');
+  }
+</script>
+</body>
+</html>
