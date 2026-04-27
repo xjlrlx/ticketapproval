@@ -366,9 +366,12 @@
       if (!res.ok) throw new Error('Server error: ' + res.status);
       showConfirm(decision, ticket, reason, payload.coding);
     })
-    .catch(() => {
-      showConfirm(decision, ticket, reason, payload.coding);
-    });
+    .catch(err => {
+  console.error('Boomi submit failed:', err);
+  alert('Submission failed. Please contact support.');
+  document.getElementById('btn-submit').disabled = false;
+  document.getElementById('btn-submit').textContent = 'Submit decision';
+});
   }
 
   function showConfirm(d, t, reason, coding) {
